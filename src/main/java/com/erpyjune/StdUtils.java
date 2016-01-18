@@ -310,29 +310,6 @@ public class StdUtils {
 
     /**
      *
-     * @param path
-     * @return
-     * @throws Exception
-     */
-    public List getSeedFileList(String path) throws Exception {
-        File folder = new File(path);
-        File[] listOfFiles = folder.listFiles();
-        List<String> fileArray = new ArrayList<String>();
-
-        for (int i = 0; i < listOfFiles.length; i++) {
-            if (listOfFiles[i].isFile()) {
-                fileArray.add(path + "/" + listOfFiles[i].getName());
-//                System.out.println(prefix + "/" + listOfFiles[i].getName());
-            } else if (listOfFiles[i].isDirectory()) {
-                System.out.println("Directory " + listOfFiles[i].getName());
-            }
-        }
-
-        return fileArray;
-    }
-
-    /**
-     *
      * @param str
      * @param delimeter
      * @return
