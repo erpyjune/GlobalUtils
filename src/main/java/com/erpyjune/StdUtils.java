@@ -379,6 +379,16 @@ public class StdUtils {
      *
      * @return
      */
+    public String getCurrDateTimeString() {
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
+        return sdf.format(date);
+    }
+
+    /**
+     *
+     * @return
+     */
     public String getCurrDate() {
         Date date = new Date();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
@@ -412,6 +422,20 @@ public class StdUtils {
 
     /**
      *
+     * @param beforeAfterMinutes
+     * @return
+     */
+    public String getMinutesBeforeAfterString(int beforeAfterMinutes) {
+        String today;
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdformat = new SimpleDateFormat("yyyyMMddHHmmss");
+        cal.add(Calendar.MINUTE, beforeAfterMinutes); // -30, +10
+        today = sdformat.format(cal.getTime());
+        return today.replace(" ","").replace("-","").replace(":","");
+    }
+
+    /**
+     *
      * @param beforeAfterHour
      * @return
      */
@@ -426,6 +450,20 @@ public class StdUtils {
 
     /**
      *
+     * @param beforeAfterHour
+     * @return
+     */
+    public String getHourBeforeAfterString(int beforeAfterHour) {
+        String today;
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdformat = new SimpleDateFormat("yyyyMMddHHmmss");
+        cal.add(Calendar.HOUR, beforeAfterHour); // -3, +2
+        today = sdformat.format(cal.getTime());
+        return today.replace(" ","").replace("-","").replace(":","");
+    }
+
+    /**
+     *
      * @param beforeAfterDay
      * @return
      */
@@ -433,6 +471,20 @@ public class StdUtils {
         String today;
         Calendar cal = Calendar.getInstance();
         SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        cal.add(Calendar.DATE, beforeAfterDay); // -3, +2
+        today = sdformat.format(cal.getTime());
+        return today.replace(" ","").replace("-","").replace(":","");
+    }
+
+    /**
+     *
+     * @param beforeAfterDay
+     * @return
+     */
+    public String getDayBeforeAfterString(int beforeAfterDay) {
+        String today;
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdformat = new SimpleDateFormat("yyyyMMddHHmmss");
         cal.add(Calendar.DATE, beforeAfterDay); // -3, +2
         today = sdformat.format(cal.getTime());
         return today.replace(" ","").replace("-","").replace(":","");
