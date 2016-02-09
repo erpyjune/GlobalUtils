@@ -1,15 +1,19 @@
 package com.erpyjune;
 
 
-import org.omg.DynamicAny.NameValuePair;
+import net.coobird.thumbnailator.Thumbnails;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.*;
-import java.net.URI;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -169,7 +173,8 @@ public class StdUtils {
      * @param fileName
      * @throws Exception
      */
-    public void saveDiskImgage(String localPath, String cpName, String url, String fileName) throws Exception {
+    public String saveDiskImgage(String localPath, String cpName, String url, String fileName) throws Exception {
+        String saveFullPath="";
         String file_ext = fileName.substring(
                 fileName.lastIndexOf('.') + 1,
                 fileName.length());
@@ -183,8 +188,12 @@ public class StdUtils {
         graphics.setBackground(Color.WHITE);
         graphics.drawImage(image, 0, 0, null);
 
-        ImageIO.write(bufferedImage, file_ext, new File(localPath + "/" + cpName + "/" + fileName));
+        saveFullPath = localPath + File.separator + cpName + File.separator + fileName;
+        ImageIO.write(bufferedImage, file_ext, new File(saveFullPath));
         System.out.println(" Downloaded : " + url);
+        System.out.println(" Save path : " + saveFullPath);
+
+        return saveFullPath;
     }
 
     /**
@@ -219,8 +228,6 @@ public class StdUtils {
                 img.createGraphics().drawImage(scaledImage, 0, 0, null);
                 BufferedImage img2 = new BufferedImage(100, 100 ,BufferedImage.TYPE_INT_RGB);
                 img2 = img.getSubimage((int)((percentWidth-100)/2), 0, 100, 100);
-
-
                 ImageIO.write(img2, "jpg", new File(outputFile));
             }else{
                 float extraSize=    width-100;
@@ -370,6 +377,69 @@ public class StdUtils {
 
     /**
      *
+     * @return
+     */
+    public String getCurrDate() {
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
+        return sdf.format(date);
+    }
+
+    /**
+     *
+     * @param option
+     * @return
+     */
+    public String getCurrDateOption(String option) {
+        Date date = new Date();
+        SimpleDateFormat sdf = new SimpleDateFormat(option); // yyyyMMdd HH:mm:ss
+        return sdf.format(date);
+    }
+
+    /**
+     *
+     * @param beforeAfterMinutes
+     * @return
+     */
+    public String getMinutesBeforeAfter(int beforeAfterMinutes) {
+        String today;
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        cal.add(Calendar.MINUTE, beforeAfterMinutes); // -30, +10
+        today = sdformat.format(cal.getTime());
+        return today.replace(" ","").replace("-","").replace(":","");
+    }
+
+    /**
+     *
+     * @param beforeAfterHour
+     * @return
+     */
+    public String getHourBeforeAfter(int beforeAfterHour) {
+        String today;
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        cal.add(Calendar.HOUR, beforeAfterHour); // -3, +2
+        today = sdformat.format(cal.getTime());
+        return today.replace(" ","").replace("-","").replace(":","");
+    }
+
+    /**
+     *
+     * @param beforeAfterDay
+     * @return
+     */
+    public String getDayBeforeAfter(int beforeAfterDay) {
+        String today;
+        Calendar cal = Calendar.getInstance();
+        SimpleDateFormat sdformat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        cal.add(Calendar.DATE, beforeAfterDay); // -3, +2
+        today = sdformat.format(cal.getTime());
+        return today.replace(" ","").replace("-","").replace(":","");
+    }
+
+    /**
+     *
      * @param totalSize
      * @return
      */
@@ -378,11 +448,108 @@ public class StdUtils {
         return oRandom.nextInt(totalSize);
     }
 
+    /**
+     *
+     * @param str
+     * @return
+     */
+    public boolean isNumeric(String str) {
+        for (char c : str.toCharArray()) {
+            if (!Character.isDigit(c)) return false;
+        }
+        return true;
+    }
+
+    /**
+     *
+     * @param s
+     * @return
+     */
+    public String removeSpace(String s) {
+        int index=0;
+        char[] temp = new char[64];
+
+        for (char c : s.toCharArray()) {
+            if (!Character.isSpaceChar(c)) {
+                temp[index++] = c;
+            }
+            if (index>50) break;
+        }
+        return String.valueOf(temp);
+    }
+
+    /**
+     *
+     * @param sourceFile
+     * @param destFile
+     * @throws Exception
+     */
+    public void makeThumbnailator(String sourceFile, String destFile, int width, int height) throws Exception {
+        System.out.println(" Make thumbnail [" + destFile + "]");
+        try {
+            Thumbnails.of(sourceFile)
+                    .size(width, height)
+                    .toFile(destFile);
+        } catch (Exception e) {
+            System.out.println(Arrays.toString(e.getStackTrace()));
+        }
+    }
+
+    /**
+     *
+     * @param filePath
+     * @param tag
+     * @return
+     * @throws Exception
+     */
+    public String insertStringToFileExtFront(String filePath, String tag) throws Exception {
+        if (filePath==null || tag==null) return "";
+        int pos = filePath.lastIndexOf(".");
+        if (pos<0) {
+            System.out.println("ERROR not found comma [" + filePath + "]");
+            return "";
+        }
+        String fileFront = filePath.substring(0, pos);
+        String fileExt   = filePath.substring(pos, filePath.length());
+
+        return fileFront + tag + fileExt;
+    }
+
+    public void saveImage(String imageUrl, String destinationFile) throws Exception {
+        System.out.println("Download [" + destinationFile + "]");
+        File picutreFile = new File(destinationFile);
+        URL url=new URL(imageUrl);
+        URLConnection conn = url.openConnection();
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.3 (KHTML, like Gecko) Version/8.0 Mobile/12A4345d Safari/600.1.4");
+        conn.setRequestProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
+        conn.setRequestProperty("Upgrade-Insecure-Requests","1");
+        conn.connect();
+        FileUtils.copyInputStreamToFile(conn.getInputStream(), picutreFile);
+    }
+
+    private void makeThumbnailTest() throws Exception {
+        StdUtils stdUtils = new StdUtils();
+        String localPath="/Users/oj.bae/Work/BoardWang/thumb/JjangOu/";
+        String imageUrl = "http://www.dogdrip.net/files/attach/dvs/16/02/08/78/787/882/090/70a10f193453494fff3b28cf57f985ce.jpg";
+        int width = 50;
+        int height = 50;
+
+        System.out.println("ext  : " + FilenameUtils.getExtension("http://www.dogdrip.net/files/attach/dvs/16/02/09/78/975/912/090/f9e5e16ef13214a4848e96f702233443.jpg"));
+        System.out.println("base : " + FilenameUtils.getBaseName("http://www.dogdrip.net/files/attach/dvs/16/02/09/78/975/912/090/f9e5e16ef13214a4848e96f702233443.jpg"));
+        System.out.println("name : " + FilenameUtils.getName("http://www.dogdrip.net/files/attach/dvs/16/02/09/78/975/912/090/f9e5e16ef13214a4848e96f702233443.jpg"));
+        System.out.println("path : " + FilenameUtils.getPath("http://www.dogdrip.net/files/attach/dvs/16/02/09/78/975/912/090/f9e5e16ef13214a4848e96f702233443.jpg"));
+        System.out.println("prefix : " + FilenameUtils.getPrefix("http://www.dogdrip.net/files/attach/dvs/16/02/09/78/975/912/090/f9e5e16ef13214a4848e96f702233443.jpg"));
+
+        String sourceFile = localPath + FilenameUtils.getName(imageUrl);
+        stdUtils.saveImage(imageUrl, sourceFile);
+        String destFileName = stdUtils.insertStringToFileExtFront(sourceFile, "_thumb");
+        stdUtils.makeThumbnailator(sourceFile, destFileName, width, height);
+    }
 
     ///////////////////////////////////////////////////////////////////////////////
     public static void main(String[] args) throws Exception {
-        String url = "http://api.dc-bifrost.daumkakao.io/v1/cps/167555e6/channels/adtcaps/articles?size=5&start=551fd62aba6ef6df15000003";
+        StdUtils stdUtils = new StdUtils();
+        stdUtils.makeThumbnailTest();
 
-        StdUtils globalUtils = new StdUtils();
     }
 }

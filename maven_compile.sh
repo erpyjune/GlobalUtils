@@ -1,3 +1,1 @@
-mvn clean;
-mvn compile;
-mvn package;
+mvn clean; mvn compile; mvn package;
