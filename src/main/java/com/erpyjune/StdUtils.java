@@ -567,7 +567,7 @@ public class StdUtils {
         return fileFront + tag + fileExt;
     }
 
-    public void saveImage(String imageUrl, String destinationFile) throws Exception {
+    public void saveImage(String imageUrl, String destinationFile, Map<String,String> properties) throws Exception {
         System.out.println("Download [" + destinationFile + "]");
         File picutreFile = new File(destinationFile);
         URL url=new URL(imageUrl);
@@ -575,12 +575,19 @@ public class StdUtils {
         conn.setRequestProperty("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 8_0 like Mac OS X) AppleWebKit/600.1.3 (KHTML, like Gecko) Version/8.0 Mobile/12A4345d Safari/600.1.4");
         conn.setRequestProperty("Accept","text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8");
         conn.setRequestProperty("Upgrade-Insecure-Requests","1");
+        if (properties != null && properties.size()>0) {
+            for (Map.Entry<String, String> entry : properties.entrySet()) {
+                conn.setRequestProperty(entry.getKey(), entry.getValue());
+                System.out.println(String.format("set request header[%s=%s", entry.getKey(), entry.getValue()));
+            }
+        }
         conn.connect();
         FileUtils.copyInputStreamToFile(conn.getInputStream(), picutreFile);
     }
 
     private void makeThumbnailTest() throws Exception {
         StdUtils stdUtils = new StdUtils();
+        Map<String,String> properties=null;
         String localPath="/Users/oj.bae/Work/BoardWang/thumb/JjangOu/";
         String imageUrl = "http://www.dogdrip.net/files/attach/dvs/16/02/08/78/787/882/090/70a10f193453494fff3b28cf57f985ce.jpg";
         int width = 50;
@@ -593,7 +600,7 @@ public class StdUtils {
         System.out.println("prefix : " + FilenameUtils.getPrefix("http://www.dogdrip.net/files/attach/dvs/16/02/09/78/975/912/090/f9e5e16ef13214a4848e96f702233443.jpg"));
 
         String sourceFile = localPath + FilenameUtils.getName(imageUrl);
-        stdUtils.saveImage(imageUrl, sourceFile);
+        stdUtils.saveImage(imageUrl, sourceFile, properties);
         String destFileName = stdUtils.insertStringToFileExtFront(sourceFile, "_thumb");
         stdUtils.makeThumbnailator(sourceFile, destFileName, width, height);
     }
